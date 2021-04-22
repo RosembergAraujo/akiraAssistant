@@ -12,9 +12,9 @@ fromNone = False #Variavel que precisa ser global, caso não diga nada, ele só 
 art = '█──██████────██████──█\n█─██────██──██────██─█\n─███─██─██████─██─███\n──██────██──██────██\n───██████────██████'
 # Comandos \/ ============================
 
-pCommands = ['chrome', 'terminal', 'nautilus', 'atualizar', 'code', 'sair', 'calculadora', 'print']
+pCommands = ['chrome', 'terminal', 'nautilus', 'atualizar', 'code', 'sair', 'calculadora']
 pOpeningCommands = ['abra', 'abrir']
-pClosingCommands = ['fechar', 'feche']
+pClosingCommands = ['fechar', 'feche', 'sair']
 # Fim Comandos /\ ============================
 
 
@@ -37,6 +37,7 @@ def displayFig(param):
 def cleanConsole():
     os.system('cls' if os.name == 'nt' else 'clear')
 
+
 def vOutput(resposta):
     global engine
     engine.say(resposta)
@@ -47,8 +48,9 @@ def vInput(vAudio, fromNone):
     with sr.Microphone() as source:
         displayArt()
         displayFig('Escutando...')
-        if (fromNone == False):
+        if fromNone == False:
             vOutput(vAudio)
+        r.adjust_for_ambient_noise(source)
         audio = r.listen(source)
     try:
         input = r.recognize_google(audio, language='pt-br')
@@ -60,55 +62,8 @@ def vInput(vAudio, fromNone):
             'Ero ao chamar Google speech Recognition service; {0}' .format(e))
 # Fim das funções reutilizadas /\ ============================
 
-# Funções da IA \/ ============================
+# Funções ddo assistente \/ ============================
 
-'''
-def closeTerminal():
-    cleanConsole()
-    print('Fechado terminal...')
-    vOutput('Fechando terminal')
-
-def openWithCode():
-    cleanConsole()
-    print('Abrindo com o code o diretorio atual...')
-    vOutput('Abrindo com o code')
-    os.system('code .')
-
-
-def openCalculator():
-    cleanConsole()
-    print('Abrindo calculadora...')
-    vOutput('Abrindo calculadora')
-    os.system('gnome-calculator')
-
-
-def tirarPrint():
-    cleanConsole()
-    displayArt()
-    print('Tirando print... SALVO EM IMAGENS')
-    vOutput('Tirando print')
-    os.system('gnome-screenshot')
-
-def abrirScrcpy():
-    cleanConsole()
-    print('Abrindo tela do celular...')
-    vOutput('Abrindo tela do celular')
-    os.system('scrcpy')
-
-
-def config():
-    os.system('code $HOME/.local/bin')
-
-def sair():
-    cleanConsole()
-    displayArt()
-    print('\n\nSaindo...')
-    vOutput('Saindo')
-    cleanConsole()
-    quit()
-
-# Fim das funções da IA /\ ============================ 
-'''
 def naoEntendi(param):
     displayArt()
     print('\n\n🤔 Desculpe, \'{}\' não é um comando valido...' .format(param))
@@ -119,21 +74,21 @@ def openChrome(param):
     displayArt()
     displayFig('Abrindo chrome...')
     vOutput('Abrindo chrome')
-    if (param == ''):
+    if param == '':
         os.system('xdg-open https://google.com/')
-    elif(param == 'youtube'):
+    elif param == 'youtube':
         os.system('xdg-open http://youtube.com')
-    elif(param == 'notion'):
+    elif param == 'notion':
         os.system('xdg-open http://notion.so')
 
 def openNautilus(param):
-    if (param == 'atual'):
+    if param == 'atual':
         os.system('xdg-open ./')
         start()
-    elif (param == 'inicial' or param == ''):
+    elif param == 'inicial' or param == '':
         os.system('xdg-open $HOME')
         start()
-    elif (param == None or param == 'voltar'):
+    elif param == None or param == 'voltar':
         start()
     else:
         naoEntendi(param)
@@ -143,10 +98,16 @@ def openTerminal(param):
     displayArt()
     displayFig('Abrindo terminal...')
     vOutput('Abrindo terminal...')
-    if(param == '' or param == 'atual'):
+    if param == '' or param == 'atual':
         os.system('gnome-terminal ./')
-    elif(param == 'inicial'):
+    elif param == 'inicial':
         os.system('gnome-terminal $HOME')
+
+def openWithCode(param):
+    displayArt()
+    displayFig('Abrindo com o vscode...')
+    vOutput('Abrindo com o code')
+    os.system('code .')
 
 def updateSystem(param):
     displayArt()
@@ -160,6 +121,21 @@ def updateSystem(param):
         os.system('sudo apt-get update')
         os.system('sudo apt-get upgrade')
 
+def openCalculator(param):
+    displayArt()
+    displayFig('Abrindo calculadora...')
+    vOutput('Abrindo calculadora')
+    os.system('gnome-calculator')
+
+def exit():
+    displayArt()
+    displayFig('Saindo...')
+    vOutput('saindo')
+    quit()
+
+# Fim das funções do assistente /\ ============================ 
+
+
 def start():
 
     global fromNone
@@ -168,43 +144,57 @@ def start():
 
     voiceInput = vInput(
         'Como posso ajudar ?', fromNone)
-    if (voiceInput != None):
-        fromNone = False
-
-        inputAsArray = voiceInput.lower().split(' ')
-        inputAfterTreatment = stringTreatament(inputAsArray)
-
-        if(inputAfterTreatment[0] in pOpeningCommands or inputAfterTreatment[0] in pClosingCommands):
-            firstCommand = inputAfterTreatment[0]
-            inputAfterTreatment.remove(firstCommand)
-
-        if(inputAfterTreatment[0] in pCommands): #Caso o comando for um dos comandos validos
-            if(firstCommand in pOpeningCommands): #Apenas para comandos de abertura de 'programas'
-                for i in inputAfterTreatment:
-                    if (i != inputAfterTreatment[0]):
-                        allParameter += i #Tira o comando ja validado e concatena todo o resto como um parametro a ser enviado
-                if(inputAfterTreatment[0] == 'chrome'):
-                    try:
-                        openChrome(allParameter)#tenta enviar com esse parametro
-                    except:
-                        openChrome('')#Se n conseguir, ele envia sem parametro
-                elif(inputAfterTreatment[0] == 'nautilus'):
-                    try:
-                        openNautilus(allParameter)
-                    except:
-                        openNautilus('')
-                elif(inputAfterTreatment[0] == 'terminal'):
-                    try:
-                        openTerminal(allParameter)
-                    except:
-                        openTerminal('')
-                elif(inputAfterTreatment[0] == 'atualizar'):
-                    try:
-                        openTerminal(allParameter)
-                    except:
-                        openTerminal('')
+    print(voiceInput)
+    if voiceInput != None:
+        if voiceInput in pClosingCommands:
+            exit()
         else:
-            print('NOT IN COMMANDS')
+            fromNone = False
+
+            inputAsArray = voiceInput.lower().split(' ')
+            inputAfterTreatment = stringTreatament(inputAsArray)
+
+            if inputAfterTreatment[0] in pOpeningCommands:
+                firstCommand = inputAfterTreatment[0]
+                inputAfterTreatment.remove(firstCommand)
+
+            if inputAfterTreatment[0] in pCommands: #Caso o comando for um dos comandos validos
+                if firstCommand in pOpeningCommands: #Apenas para comandos de abertura de 'programas'
+                    for i in inputAfterTreatment:
+                        if i != inputAfterTreatment[0]:
+                            allParameter += i #Tira o comando ja validado e concatena todo o resto como um parametro a ser enviado
+                    if inputAfterTreatment[0] == 'chrome':
+                        try:
+                            openChrome(allParameter)#tenta enviar com esse parametro
+                        except:
+                            openChrome('')#Se n conseguir, ele envia sem parametro
+                    elif inputAfterTreatment[0] == 'nautilus':
+                        try:
+                            openNautilus(allParameter)
+                        except:
+                            openNautilus('')
+                    elif inputAfterTreatment[0] == 'terminal':
+                        try:
+                            openTerminal(allParameter)
+                        except:
+                            openTerminal('')
+                    elif inputAfterTreatment[0] == 'atualizar':
+                        try:
+                            openTerminal(allParameter)
+                        except:
+                            openTerminal('')
+                    elif inputAfterTreatment[0] == 'code':
+                        try:
+                            openWithCode(allParameter)
+                        except:
+                            openWithCode('')
+                    elif inputAfterTreatment[0] == 'calculadora':
+                        try:
+                            openCalculator(allParameter)
+                        except:
+                            openCalculator('')
+            else:
+                naoEntendi(voiceInput)
     else:
         vOutput('none')
         fromNone = True
