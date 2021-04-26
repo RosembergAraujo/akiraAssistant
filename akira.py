@@ -8,37 +8,37 @@ import subprocess
 import glob
 import time
 
-fromNone = False #Variavel que precisa ser global, caso não diga nada, ele só espera
+fromNone = False #Global variable that needs to be global
 
 
-art = '█──██████────██████──█\n█─██────██──██────██─█\n─███─██─██████─██─███\n──██────██──██────██\n───██████────██████'
+art = '█──██████────██████──█\n█─██────██──██────██─█\n─███─██─██████─██─███\n──██────██──██────██\n───██████────██████' #ASCii Art
 
-engine = pyttsx3.init()
+engine = pyttsx3.init() 
 engine.setProperty('voice', 'brazil')
 engine.setProperty('rate', 230)
 
 # Comandos \/ ============================
 
-pPlaySongsCommands = ['musica', 'ouvir', 'playlist', 'tocar', 'toque'] #todos os comandos com mais de uma possibilidade
+pPlaySongsCommands = ['musica', 'ouvir', 'playlist', 'tocar', 'toque'] #Commands with more than one possibility
 pFilesCommands = ['arquivos', 'pastas', 'nautilus', 'nautilu', 'nautilo']
 
-pGeneralCommands = ['chrome', 'terminal', 'atualizar', 'code', 'calculadora'] #Comandos com uma só possibilidade
-pPossibleCommands = [pPlaySongsCommands, pFilesCommands, pGeneralCommands] #Array de comandos
-pAllValideCommands = ['sair'] #Precisa iniciar um array com algo, 'sair' é uma boa opção
+pGeneralCommands = ['chrome', 'terminal', 'atualizar', 'code', 'calculadora'] #Simple commands that have no variation
+pPossibleCommands = [pPlaySongsCommands, pFilesCommands, pGeneralCommands] #Commands array, to make all together
+pAllValideCommands = ['sair'] #I have to start this array, so "exit", is a good choice :)
 for options in pPossibleCommands:
-    pAllValideCommands.extend(options) #extende todos os comandos dos outros arrays
+    pAllValideCommands.extend(options) #Extend all the others commands arrays in just one
 
 
 
-pOpeningCommands = ['abra', 'abrir']
+pOpeningCommands = ['abra', 'abrir'] # BTW "p" means possibilities :)
 pClosingCommands = ['fechar', 'feche', 'sair']
 # Fim Comandos /\ ============================
 
 
-# Funções reutilizadas \/ ============================
-def stringTreatament(param): #nunca enviar parametro sem splitar antes para n 'comer' os 'os' 'nos'
+# Reused functions \/ ============================
+def stringTreatament(param): #A way to treat some useless exceptions and take off portuguese prepositions 
     removeList = [',', '', 'o', 'a', 'na', 'no', 'nos', 'nas', 'um', 'uma', 'akira', 'com', 'diretório', 'diretorio', 'diretor', 'gestor']
-    for i in range(len(param) -1, -1, -1): #TEM Q RODAR ESSA DESGRAÇA DE TRAS PRA FRENTE
+    for i in range(len(param) -1, -1, -1): #Run the array backward and remove all words on remove list
         if param[i] in removeList:
             param.remove(param[i])
     return param
@@ -52,15 +52,15 @@ def displayFig(param):
     os.system('\n\n\nfiglet -f future {}'.format(param))
 
 def cleanConsole():
-    os.system('cls' if os.name == 'nt' else 'clear')
+    os.system('cls' if os.name == 'nt' else 'clear') #Maybe its can run in windows ? who knows, right ?
 
 
-def vOutput(resposta):
+def vOutput(resposta): #Voice output
     global engine
     engine.say(resposta)
     engine.runAndWait()
 
-def vInput(vAudio, fromNone):
+def vInput(vAudio, fromNone): #Voice input
     r = sr.Recognizer()
     with sr.Microphone() as source:
         displayArt(True)
@@ -77,11 +77,11 @@ def vInput(vAudio, fromNone):
     except sr.ResquestError as e:
         print(
             'Ero ao chamar Google speech Recognition service; {0}' .format(e))
-# Fim das funções reutilizadas /\ ============================
+# End of reused functions /\ ============================
 
-# Funções ddo assistente \/ ============================
+# Akira functions \/ ============================
 
-def naoEntendi(param):
+def dontGetIt(param):
     displayArt(True)
     print('\n\n🤔 Desculpe, \'{}\' não é um comando valido...' .format(param))
     vOutput('🤔 Desculpe, {} não é um comando valido... ' .format(param))
@@ -108,7 +108,7 @@ def openFiles(param):
     elif param == None or param == 'voltar':
         start()
     else:
-        naoEntendi(param)
+        dontGetIt(param)
         openFiles()
 
 def openTerminal(param):
@@ -154,7 +154,7 @@ def exit():
 
 
 def playlistMode(param):
-    atualSong = -1 #TEM Q SER VAR DE ESCOPO ACIMA DAS FUNÇÕES 
+    atualSong = -1 #Need to be in a upper scope
     songsMainPath = '/home/berg/Música/'
     songList = []
     songCounter = 0
@@ -176,7 +176,8 @@ def playlistMode(param):
         for i in songList:
             print("Arquivo ({0}) => {1}" .format(songCounter, i))
             songCounter+=1
-        chosedSong = int(input("\nEntrada => ")) # ESCOLHA DA MUSICA
+        chosedSong = int(input("\nEntrada => ")) # Place holder keyboard input
+        #chosedSong = int(vInput('Opções de 0 até {}'.format(songCounter -1), fromNone))
         if chosedSong < len(songList) -1 and chosedSong >= 0:
             atualSong = chosedSong
             playSubProcess("{0}{1}" .format(songsMainPath,songList[chosedSong]))
@@ -201,7 +202,6 @@ def playlistMode(param):
         global songList
         global songCounter
 
-        print(atualSong)
         os.chdir(songsMainPath)
         for file in glob.glob("*.mp3"):
             songList.append(file)
@@ -274,11 +274,11 @@ def playlistMode(param):
         songCounter = 0
         
         if fromNone == False:
-            #playInput = vInput('Como posso ajudar ?', fromNone)
+            #playInput = vInput('PlaylistMode ligado', fromNone)
+            # Place holder keyboard input
             playInput = str(input("\n\n-1 PARA SAIR\n0.PARA LISTAR\n1.PARA PLAY\n2.PARA STOP \n3.Para proxima musica\n4.Para musica anterior\n5.PARA REMOVER UMA MUSICA\n>> "))
             playInputAsArray = playInput.lower().split(" ")
             playInput = stringTreatament(playInputAsArray)
-            print(playInput)
             if playInput[0] in pClosingCommands:
                 exit()
             else:
@@ -296,7 +296,7 @@ def playlistMode(param):
                     elif playInput[0] in pDeleSong:
                         deleteSong()
                     elif playInput[0] in pClosingCommands:
-                        exit()
+                        quit()
                     fromNone = False
                     mainLoop()
                 else:
@@ -305,7 +305,7 @@ def playlistMode(param):
         else:
             playInput = str(input(">")) #QUANDO COLOCAR INPUT DE VOZ COLOCAR O FROM NONE
     mainLoop()
-# Fim das funções do assistente /\ ============================ 
+# End of akira functions /\ ============================ 
 
 
 def start():
@@ -328,15 +328,15 @@ def start():
                 firstCommand = inputAfterTreatment[0]
                 inputAfterTreatment.remove(firstCommand)
 
-            if inputAfterTreatment[0] in pAllValideCommands: #Caso o comando for um dos comandos validos
+            if inputAfterTreatment[0] in pAllValideCommands:
                 for word in inputAfterTreatment:
                     if word != inputAfterTreatment[0]:
-                        allParameter += word #Tira o comando ja validado e concatena todo o resto como um parametro a ser enviado
+                        allParameter += word #Remove the already validate command and concatenate all the rest as a parammeter
                 if inputAfterTreatment[0] == 'chrome':
                     try:
-                        openChrome(allParameter)#tenta enviar com esse parametro
+                        openChrome(allParameter)#Try to send this parammeter
                     except:
-                        openChrome('')#Se n conseguir, ele envia sem parametro
+                        openChrome('')#Or just a empty string
                 elif inputAfterTreatment[0] in pFilesCommands:
                     try:
                         openFiles(allParameter)
@@ -349,9 +349,9 @@ def start():
                         openTerminal('')
                 elif inputAfterTreatment[0] == 'atualizar':
                     try:
-                        openTerminal(allParameter)
+                        updateSystem(allParameter)
                     except:
-                        openTerminal('')
+                        updateSystem('')
                 elif inputAfterTreatment[0] == 'code':
                     try:
                         openWithCode(allParameter)
@@ -368,8 +368,8 @@ def start():
                     except:
                         playlistMode('')
             else:
-                naoEntendi(voiceInput)
-    else:
+                dontGetIt(voiceInput)
+    else: #If don't have any voice input, akira tries to get again but without voice output
         vOutput('none')
         fromNone = True
         start()
